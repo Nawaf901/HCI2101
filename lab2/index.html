@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لعبة تخمين الألوان السحرية - HCI2101</title>
+    <style>
+        /* CSS: تنسيق شكل اللعبة */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #f4f4f4; padding: 50px; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); display: inline-block; min-width: 400px; }
+        h1 { color: #333; margin-bottom: 5px; }
+        .color-box { width: 70px; height: 70px; display: inline-block; margin: 10px; cursor: pointer; border: 4px solid #ddd; border-radius: 12px; transition: 0.3s; }
+        .color-box:hover { transform: scale(1.1); }
+        .selected { border-color: #007bff; box-shadow: 0 0 15px rgba(0,123,255,0.6); transform: scale(1.1); }
+        #result { margin-top: 20px; font-weight: bold; min-height: 25px; font-size: 1.2rem; }
+        .stats { font-size: 18px; margin: 20px 0; color: #555; }
+        button { padding: 12px 30px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; transition: 0.2s; }
+        button:hover { background: #218838; }
+        .correct { color: #28a745; }
+        .wrong { color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>لعبة تخمين الألوان السحرية</h1>
+        <p>اختر لوناً ثم اضغط "تأكيد الاختيار"</p>
+        
+        <div id="colorOptionsDiv"></div>
+        
+        <div class="stats">
+            المحاولات المتبقية: <span id="attemptsDisplay">3</span> | 
+            النقاط: <span id="scoreDisplay">0</span>
+        </div>
+
+        <button onclick="checkGuess()">تأكيد الاختيار</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        /* JavaScript: منطق وبرمجة اللعبة */
+        const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
+        let secretColor, selectedColor = null, score = 0, attempts = 3;
+        
+        const colorOptionsDiv = document.getElementById('colorOptionsDiv');
+        const resultDiv = document.getElementById('result');
+        const attemptsDiv = document.getElementById('attemptsDisplay');
+        const scoreDiv = document.getElementById('scoreDisplay');
+
+        function initializeGame() {
+            // اختيار لون عشوائي ليكون هو السر
+            secretColor = colors[Math.floor(Math.random() * colors.length)];
+            colorOptionsDiv.innerHTML = '';
+            
+            // إنشاء مربعات الألوان
+            colors.forEach(color => {
+                const colorBox = document.createElement('div');
+                colorBox.className = 'color-box';
+                colorBox.style.backgroundColor = color;
+                colorBox.onclick = () => {
+                    document.querySelectorAll('.color-box').forEach(b => b.classList.remove('selected'));
+                    colorBox.classList.add('selected');
+                    selectedColor = color;
+                };
+                colorOptionsDiv.appendChild(colorBox);
+            });
+
+            selectedColor = null;
+            resultDiv.innerHTML = '';
+            attempts = 3;
+            attemptsDiv.textContent = attempts;
+            scoreDiv.textContent = score;
+        }
+
+        function checkGuess() {
+            if (!selectedColor) { 
+                resultDiv.innerHTML = '<span class="wrong">الرجاء اختيار لون أولاً!</span>'; 
+                return; 
+            }
+
+            // تحويل الألوان إلى صيغة موحدة للمقارنة
+            if (rgbToHex(selectedColor) === secretColor) {
+                resultDiv.innerHTML = '<span class="correct">أحسنت! خيار صحيح 🎉</span>';
+                score++;
+                scoreDiv.textContent = score;
+                setTimeout(initializeGame, 1500);
+            } else {
+                attempts--;
+                attemptsDiv.textContent = attempts;
+                resultDiv.innerHTML = '<span class="wrong">خطأ، حاول مرة أخرى!</span>';
+                
+                if (attempts === 0) {  
+                    alert('انتهت المحاولات! اللون الصحيح كان موجوداً بين الخيارات. سنبدأ من جديد.');
+                    score = 0;
+                    initializeGame();
+                }
+            }
+        }
+
+        // دالة مساعدة لتحويل الألوان للمقارنة بدقة
+        function rgbToHex(color) {
+            if (color.startsWith('#')) return color;
+            let rgb = color.match(/\d+/g);
+            return "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
+        }
+
+        // تشغيل اللعبة فور تحميل الصفحة
+        initializeGame();
+    </script>
+</body>
+</html>
